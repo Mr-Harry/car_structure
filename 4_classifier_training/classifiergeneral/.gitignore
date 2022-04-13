@@ -1,0 +1,15 @@
+# Default ignored files
+/.idea
+/.vscode
+*__pycache__/
+dataset/*
+/logger
+/checkpoint/*
+bash/*
+*.out
+config/label.json
+config/threshold.json
+config/config.json
+config/vocab.json
+config/vocab_emb.json
+config/model.pt
