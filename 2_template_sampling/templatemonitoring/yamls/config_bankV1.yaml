@@ -1,0 +1,53 @@
+app_name: templet_cluster_bankV1
+model: minhash
+log_level: WARN
+anchor_sql: select max(cast(SUBSTRING(c_id,28) as bigint)) from nlp_dev.templet_monitoring_base_table_bankV1
+class_label: 银行V1
+config_name: bank
+domain_table: nlp_dev.templet_monitoring_incre_table_bankV1
+classified_table: nlp_dev.templet_monitoring_incre_classified_bankV1
+hdfs_base_path: /user/nlp/templet_cluster/bank_v1
+classify_model: bankV1ClassModel0901
+
+source_table:
+  db_type: hive # 'hive' or 'mysql'
+  query: select * from nlp_dev.templet_final_base_table
+
+
+base_table:
+  table_name: nlp_dev.templet_monitoring_base_table_bankV1
+  db_type: hive
+  query: select * from nlp_dev.templet_monitoring_base_table_bankV1
+  columns:
+  partition:
+  # base任务必须包含的字段 row_key, msg, 如果是increment任务，则需要所有hash_index列以及c_id
+
+incre_table:
+  table_name: nlp_dev.templet_monitoring_incre_table_bankV1
+  db_type: hive # 'hive' or 'mysql'
+  query: select  * from nlp_dev.templet_monitoring_incre_classified_bankV1
+  columns: [ 'row_key', 'msg', 'app_name', 'suspected_app_name','c_id','class_label', 'industry', 'hash_index_0', 'hash_index_1', 'hash_index_2', 'hash_index_3','first_modified']
+
+tmp_table:
+  table_name: nlp_dev.templet_monitoring_tmp_table_bankV1
+  db_type: hive # 'hive' or 'mysql'
+  query: select * from nlp_dev.templet_monitoring_tmp_table_bankV1
+
+mysql_config:
+  url: 'jdbc:mysql://10.10.15.13:3306'
+  mode: 'overwrite'  #'append' # 一共四个写模式，'append', 'overwrite', 'ignore', 'error', 只针对mysql的写入
+  properties: {'user': 'root', 'password': 'VsjbvlpeDfkYiRCY' } # mysql的账户密码
+
+mysql_cmd:
+  m_config: {'host': '10.10.15.13', 'port': 3306, 'user': 'root', 'password': 'VsjbvlpeDfkYiRCY'}
+
+minhash:
+  window: 3
+  permutations: 32
+  bands: 4
+  seed: 1201
+  # 如果是对增量数据进行去重，不要更改随即种子
+
+class_dict: {
+    "bank": "银行V1"
+}

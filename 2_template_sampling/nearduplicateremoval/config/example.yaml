@@ -1,0 +1,25 @@
+app_name: 任务名称
+model: minhash
+log_level: ERROR, WARN, INFO
+
+
+mysql_config:
+  url: 'jdbc:mysql://10.10.15.13:3306'
+  mode: 'overwrite'  #'append' # 一共四个写模式，'append', 'overwrite', 'ignore', 'error', 只针对mysql的写入
+  properties: {'user': 'root', 'password': 'VsjbvlpeDfkYiRCY' } # mysql的账户密码
+
+
+minhash: # 如果不是很熟悉下面的参数的话，基本上这个就是最优的参数配置了
+  window: 3
+  permutations: 32
+  bands: 4
+  seed: 1201 # 如果是对增量数据进行去重，不要更改随即种子
+  
+  source_table:
+    db_type: hive或者mysql
+    query: 源表的数据查询query
+
+  target_table:
+    table_name: 目标表的表名字
+    db_type: hive或者mysql
+    columns: [ 'row_key', 'msg', 'app_name', 'suspected_app_name', 'hashcode', 'cnt', 'abnormal_label', 'class_label', 'hash_index_0', 'hash_index_1', 'hash_index_2', 'hash_index_3']

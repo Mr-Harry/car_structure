@@ -1,0 +1,14 @@
+
+
+source_table:
+  db_type: hive # 'hive' or 'mysql'
+  query: select * from nlp_dev.templet_monitoring_base_table_bank
+
+dest_table:
+  db_type: mysql # 'hive' or 'mysql'
+  table_name: bi_industry.templet_monitoring_bi_bank
+
+mysql_config:
+  url: 'jdbc:mysql://10.10.15.13:3306'
+  mode: 'append'  #'append' # 一共四个写模式，'append', 'overwrite', 'ignore', 'error', 只针对mysql的写入
+  properties: {'user': 'root', 'password': 'VsjbvlpeDfkYiRCY' } # mysql的账户密码

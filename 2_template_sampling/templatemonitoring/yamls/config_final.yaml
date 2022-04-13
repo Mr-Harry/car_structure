@@ -1,0 +1,59 @@
+app_name: templet_cluster_final
+model: minhash
+log_level: WARN
+
+
+source_table:
+  db_type: hive # 'hive' or 'mysql'
+  query: select row_key,msg,app_name,suspected_app_name, hashcode,abnormal_label ,abnormal_label as class_label from preprocess.ds_txt_final where the_date='t_date' and abnormal_label='正常文本'
+
+
+base_table:
+  table_name: nlp_dev.templet_final_base_table
+  db_type: hive
+  query: select * from nlp_dev.templet_final_base_table
+
+
+incre_table:
+  table_name: nlp_dev.templet_final_incre_table
+  db_type: hive # 'hive' or 'mysql'
+  query: select * from nlp_dev.templet_final_incre_table
+  columns: [ 'row_key', 'msg', 'app_name', 'suspected_app_name', 'hashcode', 'cnt','abnormal_label', 'class_label','hash_index_0', 'hash_index_1', 'hash_index_2', 'hash_index_3']
+
+tmp_table:
+  table_name: nlp_dev.templet_final_tmp_table
+  db_type: hive # 'hive' or 'mysql'
+  query: select * from nlp_dev.templet_final_tmp_table where cnt>1
+  
+
+mysql_config:
+  url: 'jdbc:mysql://10.10.15.13:3306'
+  mode: 'overwrite'  #'append' # 一共四个写模式，'append', 'overwrite', 'ignore', 'error', 只针对mysql的写入
+  properties: {'user': 'root', 'password': 'VsjbvlpeDfkYiRCY' } # mysql的账户密码
+
+mysql_cmd:
+  m_config: {'host': '10.10.15.13', 'port': 3306, 'user': 'root', 'password': 'VsjbvlpeDfkYiRCY'}
+
+class_dict: {"bank_v2":"银行",
+   "financial_internet_v2":"互联网金融",
+    "investment_v2":"理财",
+    "post_v2":"快递",
+    "dailylife_cost":"日常支出",
+    "game":"游戏",
+    "house":"住房",
+    "house_found":"社保公积金",
+    "insurance":"保险",
+    "medical":"医疗",
+    "offline_consumption":"线下消费",
+    "traffic_unlaw":"交通违章",
+    "trans_flight":"飞行航班",
+    "trans_rail":"铁路"
+}
+
+
+minhash:
+  window: 3
+  permutations: 32
+  bands: 4
+  seed: 1201
+  # 如果是对增量数据进行去重，不要更改随即种子
