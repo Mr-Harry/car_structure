@@ -14,12 +14,12 @@
 - hive
 - spark
 
-配置：
+配置脚本：
+
 beeline.sh（hive常用于建表）
 ```bash
 beeline -u "jdbc:hive2://coprocessor01-fcy.hadoop.dztech.com:2181,coprocessor02-fcy.hadoop.dztech.com:2181,coprocessor03-fcy.hadoop.dztech.com:2181/;serviceDiscoveryMode=zooKeeper;zooKeeperNamespace=hiveserver2"
 ```
-
 rss.sh（sparksql常用于写数）
 ```bash
 #!/bin/bash
@@ -168,8 +168,8 @@ msg符合汽车行业规则（关键词或正则）的数据
 
 ### 关键节点二：汽车短文本
 使用2_template_sampling文件夹中的代码：第一步、抽取数据源的模板数据，第二步，使用正则过滤模板数据，产生汽车短文本
-    - nearduplicateremoval文件夹中的README可以指导我们安装jar包（模板抽样的代码需要用）
-    - templatemonitoring文件夹中的模板抽样的代码可生产汽车短文本
+- nearduplicateremoval文件夹中的README可以指导我们安装jar包（模板抽样的代码需要用）
+- templatemonitoring文件夹中的模板抽样的代码可生产汽车短文本
 
 1. 安装jar包
 ```bash
@@ -181,11 +181,14 @@ tar xvf ~/.ivy2/jars.tgz
 ```
 
 2. 新建config_sample文件夹（配置文件夹，代码运行需要）
+
 config_sample文件夹结构
+```text
 .
 ├── car
 │   ├── dict_list_file.json
 │   └── domain_extractor.py
+```
 
 domain_extractor.py
 ```python
@@ -233,7 +236,7 @@ nohup sh sample_hash/start.sh car_structure car 202101 202112 0.01>template_samp
 tail -10f template_sampling.log
 ```
 
-4. 数据去重后取数
+4. 数据去重后随机取数
 ```sql
 drop table if exists nlp_dev.qianyu_20220318_label_more;
 create table nlp_dev.qianyu_20220318_label_more like nlp_dev.car_sample_merge;
@@ -256,11 +259,12 @@ limit 30000;
 
 ### 关键节点三：分类数据打标
 数据打标这块的步骤因公司环境而异
-条件差，在txt文件中，直接开始人工打标，
-条件好，公司开发一个认知平台（前端+后端），算法工程师上传数据，标签和分类规则，交给算法助理去打标
+- 条件差，在txt文件中，直接开始人工打标
+- 条件好，公司开发一个认知平台（前端+后端），算法工程师上传数据，标签和分类规则，交给算法助理去打标
+
 这里以条件好为例子：
 使用3_classification_labeling文件夹中的代码：第一步、认知平台上传数据，交付算法助理打标，第二步，从认知平台下载数据，转化成分类模型训练代码的输入
-    - parse_data_from_cognitive将认知平台下载的数据转成分类模型训练代码的输入格式
+- parse_data_from_cognitive将认知平台下载的数据转成分类模型训练代码的输入格式
 
 1. 大表拆小表，小表数据不超过5000条
 ```sql
@@ -322,7 +326,13 @@ curl -H 'Content-Type: multipart/form-data' -F "file=@car6.txt" "http://10.30.10
 curl -X POST -H 'Content-Type:application/json' -d '{"annotation": true, "createdName": "qianyu", "fileType": "txt"}' http://10.30.103.146:8080/nlp/file/download/974
 ```
 
-使用parse_data_from_cognitive代码，把从认知平台下载训练数据，转化成，分类模型的训练代码的输入数据的标准格式
+5. 使用parse_data_from_cognitive代码，把从认知平台下载训练数据，转化成模型训练的标准格式
+
+```bash
+cd ./3_classification_labeling/parse_data_from_cognitive
+python3 parse_script.py
+```
+
 - 输入前
 ```
 'ttpai.cn/aabyAy9 立即开始上传,预计耗时5分钟,最快当日可获得车辆报价哦!关注公众号,可实时查看检测进度及报价哦。'\x01其它\x01null\x01null\x01
@@ -336,8 +346,11 @@ curl -X POST -H 'Content-Type:application/json' -d '{"annotation": true, "create
 5. 评估训练数据的质量
 
 如果数据质量不合格（分布不均衡），则需要调整
-- 某个分类数据量过少：方法一、自己写正则从数据源去挖。方法二、训练一个粗糙的分类模型，去预测数据源的数据，专门抽取数据量少的分类，生成新的打标数据，交付算法助理去打标
-- 某个分类数据量过多：随机抽样
+- 某个分类数据量过少：
+    - 方法一、自己写正则从数据源去挖
+    - 方法二、训练一个粗糙的分类模型，去预测数据源的数据，专门抽取数据量少的分类，生成新的打标数据，交付算法助理去打标
+- 某个分类数据量过多：
+    - 随机抽样
 
 | 标签 | 数据量 | 调整方案 |
 | ---- | ---- | ---- |
@@ -365,7 +378,7 @@ curl -X POST -H 'Content-Type:application/json' -d '{"annotation": true, "create
 ### 关键节点四：分类模型训练
 
 使用4_classifier_training中的代码
-    - classifiergeneral代码支持分类模型的训练，预测，脏数据处理等功能
+- classifiergeneral代码支持分类模型的训练，预测，脏数据处理等功能
 
 1. 分类代码运行需要配置文件
 ```bash
