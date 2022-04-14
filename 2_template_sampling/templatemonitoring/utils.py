@@ -161,8 +161,8 @@ def add(*x):
     return sum
 
 def import_fun(import_str):
-    mod_str, _sep, class_str = import_str.rpartition('.')
-    __import__(mod_str)
+    mod_str, _sep, class_str = import_str.rpartition('.')  # 从目标字符串的末尾也就是右边开始搜索分割符。如果字符串包含指定的分隔符，则返回一个3元的元组，第一个为分隔符左边的子串，第二个为分隔符本身，第三个为分隔符右边的子串。
+    __import__(mod_str)  #__import__() 函数用于动态加载类和函数 
     try:
         return getattr(sys.modules[mod_str], class_str)
     except AttributeError:

@@ -418,3 +418,243 @@ CUDA_VISIBLE_DEVICES=0 python3 train.py --train_dataset_path /home/nlp/qianyu/la
 CUDA_VISIBLE_DEVICES=0,1 OMP_NUM_THREADS=1 python -m torch.distributed.launch --nproc_per_node=2 multiple_predict.py --model_fold ./checkpoint/DPCNN --read_path * --write_path * --msg_index * --half
 ```
 
+### 关键节点五：分类模型预测
+1. 进入GPU服务器（训练模型的服务器），找到模型训练的文件夹classifiergeneral
+2. 将/home/nlp/qianyu/classifiergeneral/checkpoint/DPCNN内的所有文件移动到config文件夹内 `mv /home/nlp/qianyu/classifiergeneral/checkpoint/DPCNN/* /home/nlp/qianyu/classifiergeneral/config `
+3. 打包模型文件夹classifiergeneral `tar cvf /home/nlp/qianyu/carV2ClassModel20220414.tgz /home/nlp/qianyu/classifiergeneral/`
+4. GPU服务器中安装了docker,docker中配置了minio的服务，向docker里推送模型`docker cp /home/nlp/qianyu/carV2ClassModel20220414.tgz 2bc8e2c2fb90:/root/qianyu`
+5. 模型保存在minio里面，minio在docker里面，进入docker `docker exec -it 2bc8e2c2fb90 /bin/bash`
+6. 进入docker以后连接MC服务 `mc config host add minio http://10.30.103.10:9000 minioadmin minioadmin --api s3v4`
+7. 向MC上传模型 `cat carV2ClassModel20220414.tgz | mc pipe minio/model/carV2ClassModel20220414.tgz`
+
+两个配置脚本 `/car_structure/5_classifer_predicting/nlp_structure_config/car`
+config_test.json 主要配置文件，包含依赖表名，各级输出表名配置等。 线上运行时需增加config_master.json和config_customer.json
+class_run.sh 模型分类容器运行脚本
+
+config_test.json
+```json
+{
+    "source_table": "preprocess.ds_txt_final_sample",
+    // 数据源
+    "domain_table": "nlp_dev.car_txt_domain_data_v2",
+    // 过滤汽车正则，得到domain表
+    "classified_table": "nlp_dev.car_txt_classified_V2",
+    // 跑分类模型，得到分类表
+    "hdfs_base_path": "/user/nlp_structure/product/structure/car",
+    // hdfs上的缓存路径
+    "classify_model": "carV2ClassModel20220414.tgz",
+    // minio上的模型名称
+    // "ner_model": "bankV1NerModel0530",
+    "full_label_dict": {
+        "金融_银行_储蓄账户_支出": "金融_银行_储蓄账户_支出",
+        "金融_银行_营销": "金融_银行_营销",
+        "金融_银行_储蓄账户_收入": "金融_银行_储蓄账户_收入",
+        "金融_银行_信用卡_还款": "金融_银行_信用卡_还款",
+        "金融_银行_信用卡_还款提醒": "金融_银行_信用卡_还款提醒",
+        "金融_银行_业务办理": "金融_银行_业务办理",
+        "金融_银行_信用卡_支出": "金融_银行_信用卡_支出",
+        "金融_银行_其它": "金融_银行_其它",
+        "金融_银行_贷款_还款": "金融_银行_贷款_还款",
+        "金融_银行_贷款_还款提醒": "金融_银行_贷款_还款提醒",
+        "金融_银行_信用卡_逾期": "金融_银行_信用卡_逾期",
+        "金融_银行_信用卡_额度调整": "金融_银行_信用卡_额度调整",
+        "金融_银行_生日祝福": "金融_银行_生日祝福",
+        "金融_银行_信用卡_分期": "金融_银行_信用卡_分期",
+        "金融_银行_贷款_审核": "金融_银行_贷款_审核",
+        "金融_银行_贷款_发放": "金融_银行_贷款_发放",
+        "金融_银行_贷款_逾期": "金融_银行_贷款_逾期",
+        "金融_银行_信用卡_取现": "金融_银行_信用卡_取现",
+        "金融_银行_信用卡_申请审批": "金融_银行_信用卡_申请审批",
+        "金融_银行_信用卡_放卡激活": "金融_银行_信用卡_放卡激活"
+    },
+    // 分类定义
+    "need_ner_dict": {
+        "金融_银行_储蓄账户_支出": "1",
+        "金融_银行_储蓄账户_收入": "1",
+        "金融_银行_信用卡_还款": "1",
+        "金融_银行_信用卡_还款提醒": "1",
+        "金融_银行_信用卡_支出": "1",
+        "金融_银行_贷款_还款": "1",
+        "金融_银行_贷款_还款提醒": "1",
+        "金融_银行_信用卡_逾期": "1",
+        "金融_银行_信用卡_额度调整": "1",
+        "金融_银行_信用卡_分期": "0",
+        "金融_银行_贷款_审核": "1",
+        "金融_银行_贷款_发放": "1",
+        "金融_银行_贷款_逾期": "1",
+        "金融_银行_信用卡_申请审批": "0",
+        "金融_银行_信用卡_放卡激活": "0"
+    },
+    // 分类要不要跑实体
+    "ner_model_dict": {
+        "金融_银行_储蓄账户_支出": "cx_bilst_crf",
+        "金融_银行_储蓄账户_收入": "cx_bilst_crf",
+        "金融_银行_信用卡_还款": "xyk_hk_bilstm_crf",
+        "金融_银行_信用卡_还款提醒": "xyk_hk_bilstm_crf",
+        "金融_银行_信用卡_支出": "xyk_zc_bilstm_crf",
+        "金融_银行_贷款_还款": "yh_hk_bilstm_crf",
+        "金融_银行_贷款_还款提醒": "yh_hk_bilstm_crf",
+        "金融_银行_信用卡_逾期": "xyk_yq_bilstm_crf",
+        "金融_银行_信用卡_额度调整": "xyk_edtz_bilstm_crf",
+        "金融_银行_贷款_审核": "shff_bilstm_crf",
+        "金融_银行_贷款_发放": "shff_bilstm_crf",
+        "金融_银行_贷款_逾期": "yh_yq_bilstm_crf",
+        "金融_银行_信用卡_申请审批": "",
+        "金融_银行_信用卡_放卡激活": ""
+    },
+    // 实体模型
+    "nlp_table_dict": {
+        "金融_银行_储蓄账户_支出": "nlp_test.bank_txt_saving_expenses",
+        "金融_银行_储蓄账户_收入": "nlp_test.bank_txt_saving_revenue",
+        "金融_银行_信用卡_还款": "nlp_test.bank_txt_credit_repayment",
+        "金融_银行_信用卡_还款提醒": "nlp_test.bank_txt_credit_repayment_warn",
+        "金融_银行_信用卡_支出": "nlp_test.bank_txt_credit_expenses",
+        "金融_银行_贷款_还款": "nlp_test.bank_txt_loan_repayment",
+        "金融_银行_贷款_还款提醒": "nlp_test.bank_txt_loan_repayment_warn",
+        "金融_银行_信用卡_逾期": "nlp_test.bank_txt_credit_overdue",
+        "金融_银行_信用卡_额度调整": "nlp_test.bank_txt_credit_limit",
+        "金融_银行_贷款_审核": "nlp_test.bank_txt_loan_approval",
+        "金融_银行_贷款_发放": "nlp_test.bank_txt_loan_provide",
+        "金融_银行_贷款_逾期": "nlp_test.bank_txt_loan_overdue",
+        "金融_银行_信用卡_申请审批": "nlp_test.bank_txt_credit_approval",
+        "金融_银行_信用卡_放卡激活": "nlp_test.bank_txt_credit_provide"
+    },
+    // 实体结果表
+    "dwb_table_dict": {
+        "金融_银行_储蓄账户_支出": "dwb_test.bank_txt_saving_expenses",
+        "金融_银行_储蓄账户_收入": "dwb_test.bank_txt_saving_revenue",
+        "金融_银行_信用卡_还款": "dwb_test.bank_txt_credit_repayment",
+        "金融_银行_信用卡_还款提醒": "dwb_test.bank_txt_credit_repayment_warn",
+        "金融_银行_信用卡_支出": "dwb_test.bank_txt_credit_expenses",
+        "金融_银行_贷款_还款": "dwb_test.bank_txt_loan_repayment",
+        "金融_银行_贷款_还款提醒": "dwb_test.bank_txt_loan_repayment_warn",
+        "金融_银行_信用卡_逾期": "dwb_test.bank_txt_credit_overdue",
+        "金融_银行_信用卡_额度调整": "dwb_test.bank_txt_credit_limit",
+        "金融_银行_贷款_审核": "dwb_test.bank_txt_loan_approval",
+        "金融_银行_贷款_发放": "dwb_test.bank_txt_loan_provide",
+        "金融_银行_贷款_逾期": "dwb_test.bank_txt_loan_overdue",
+        "金融_银行_信用卡_申请审批": "dwb_test.bank_txt_credit_approval",
+        "金融_银行_信用卡_放卡激活": "dwb_test.bank_txt_credit_provide"
+    }
+    // 清洗后的实体结果表
+}
+```
+
+class_run.sh
+```bash
+function get_list {
+    gpu_num=$1
+    work_num=$2
+    s=""
+    i=0
+    while(( $i<$gpu_num ))
+    do
+        ii=0
+        while(( $ii<$work_num))
+        do
+            s=$s" "$i
+           let "ii++"
+        done
+       let "i++"
+    done
+    echo $s
+}
+
+source /etc/profile
+mc cat minio/code/conf.tgz >> conf.tgz
+tar xvf conf.tgz && rm conf.tgz
+cp conf/* /etc/
+cp conf/* /opt/
+
+mc cat minio/code/k8s-0.0.1-SNAPSHOT.jar >> server-0.0.1-SNAPSHOT.jar
+nohup java -jar server-0.0.1-SNAPSHOT.jar > log.log &
+sleep 5
+
+DIR="/root"
+WORK_NUM=3  # 每个GPU可以开启的工作进程数，主要为了提高GPU使用效率。
+echo $DIR
+echo "拉取代码"  # 这些是结构化生产所必须的代码组件。
+mc cat minio/code/rust_server4.tgz >> rust_server.tgz
+mc cat minio/code/predict.tgz >> predict.tgz
+
+echo "拉取模型文件" # 这里是需要准备打包上传的模型文件
+mc cat minio/model/carV2ClassModel20220414.tgz >> carV2ClassModel20220414.tgz
+echo "解压"
+tar xvf rust_server.tgz && rm rust_server.tgz
+tar xvf predict.tgz && rm predict.tgz
+tar xvf carV2ClassModel20220414.tgz && rm carV2ClassModel20220414.tgz
+mv bankV1ClassModel0901 predict/  # 对于分类任务，需要将模型文件夹移动到predict文件夹下
+echo "启动"
+gpu_list=`get_list GPU_NUM WORK_NUM`
+# 启动模型Work
+# ner任务:
+# cd $DIR/predict && bash start_predict_worker.sh -s 9001 -d 9003 -g "$gpu_list" -l ./ -m $DIR/bank_ner/saved_model/  # -m指定模型目录
+# 分类任务
+cd $DIR/predict && bash start_predict_worker_classfiy.sh -s 9001 -d 9003 -n 9002 -g "$gpu_list" -l ./
+# start_one.sh脚本提供数据分隔符自定义，需要预测的字段序号自定义，分别通过-p和-i指定，默认分隔符为'\t'，默认字段序号为4。
+cd $DIR/rust_server && bash start_one.sh -s 9001 -n 9002 -d 9003 -i 5 -f $DIR/config.json -r 127.0.0.1:6663 -t 127.0.0.1:6663
+# 判断最后执行是成功还是失败
+if [ $? == 0 ]; then
+    echo "完成"
+    exit 0
+else
+    echo "失败"
+    exit 1
+fi
+```
+
+将`/car_structure/5_classifer_predicting/nlp_structure_config/car`文件夹放到`nlp_structure/config`
+将`nlp_structure`文件夹打包，上传到可以跑hive的服务器（12）
+进入跑数服务器（生产服务器）`/home/nlp_dev/qianyu/nlp_structure`的路径内，
+
+
+目标数据获取
+```sql
+drop table if exists nlp_dev.car_txt_domain_data_v2;
+create table if not exists nlp_dev.car_txt_domain_data_v2
+(
+    row_key String COMMENT '唯一编码',
+    mobile_id String COMMENT '手机号映射id',
+    event_time String COMMENT '发信时间',
+    app_name String COMMENT '清洗签名',
+    suspected_app_name String COMMENT '原始签名',
+    msg String COMMENT '短信内容',
+    main_call_no String COMMENT '发信号码',
+    abnormal_label String COMMENT '是否为正常文本',
+    hashcode String COMMENT 'msg的simhash编码'
+)COMMENT 'car_structure' partitioned BY(
+    the_date string COMMENT '业务日期yyyy-MM-dd格式',
+    file_no string COMMENT 'file_no')
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '\\t'
+STORED AS orc;
+```
+
+`python3 domain/domain.py --config_name car --the_date 2021-10-01 --file_no all --config_type test`
+
+数据分类
+```sql
+drop table if exists nlp_dev.car_txt_classified_V2;
+create table if not exists nlp_dev.car_txt_classified_V2
+(
+    row_key String COMMENT '唯一编码',
+    mobile_id String COMMENT '手机号映射id',
+    event_time String COMMENT '发信时间',
+    app_name String COMMENT '清洗签名',
+    suspected_app_name String COMMENT '原始签名',
+    msg String COMMENT '短信内容',
+    main_call_no String COMMENT '发信号码',
+    abnormal_label String COMMENT '是否为正常文本',
+    hashcode String COMMENT 'msg的simhash编码',
+    class_rule_id String COMMENT '分类标识来源 -1代表模型 0代表HASH 其它正整数代表相应的规则id',
+    ner_label String COMMENT '实体处理方案标识 目前使用normal作为通用',
+    class_label_prob Double COMMENT '分类概率值 如果是非模型直接使用1.0',
+    the_date string COMMENT '业务日期yyyy-MM-dd格式'
+)COMMENT '${config_name}' partitioned BY(
+    file_no string COMMENT 'file_no',
+    class_label string comment '分类标识'
+    )
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '\\t'
+STORED AS orc;
+```
+ 
+`python3 classifier/classifier.py --config_name car --the_date 2021-10-01 --file_no all --config_type test`  

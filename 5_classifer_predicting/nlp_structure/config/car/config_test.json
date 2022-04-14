@@ -1,0 +1,23 @@
+{
+    "source_table": "preprocess.ds_txt_final_sample",
+    "domain_table": "nlp_dev.car_txt_domain_data_v2",
+    "classified_table": "nlp_dev.car_txt_classified_V2",
+    "hdfs_base_path": "/user/nlp_structure/product/structure/car",
+    "classify_model": "carV2ClassModel20220414.tgz",
+    "ner_model": "bankV1NerModel0530",
+    "full_label_dict": {
+        "购车意向_看车询价": "购车意向_看车询价",
+        "购车意向_买车": "购车意向_买车",
+        "购车意向_摇号竞价": "购车意向_摇号竞价",
+        "购车意向_学车考试": "购车意向_学车考试",
+        "购车意向_车牌号预选": "购车意向_车牌号预选",
+        "有车行为_车贷": "有车行为_车贷",
+        "有车行为_记分办证": "有车行为_记分办证",
+        "有车行为_年检年审": "有车行为_年检年审",
+        "有车行为_洗车": "有车行为_洗车",
+        "有车行为_保养维修": "有车行为_保养维修",
+        "有车行为_车辆告警": "有车行为_车辆告警",
+        "非汽车": "非汽车",
+        "其它": "其它"
+    }
+}

@@ -64,14 +64,14 @@ def hash_main(config_name, start_month, end_month, sample_ratio):
         target_data = cluster.spark.createDataFrame(
             orig_data.rdd.filter(target_data_extractor_func), domain_schema).sample(withReplacement=False,  fraction=float(sample_ratio))
         df_out = target_data.select("row_key", "mobile_id","app_name","suspected_app_name","msg", "hashcode",
-                                F.lit(the_month).cast(StringType()).alias('the_month'))  
-        df_out.repartition(10).write.format('hive').saveAsTable(f'nlp_dev.{config_name}_sample_hash',  mode="append", partitionBy=['the_month'])
-        start_month = str(int(start_month)+1) if int(start_month[4:])<12 else str(int(start_month)+100-11)
+                                F.lit(the_month).cast(StringType()).alias('the_month'))  # pyspark.sql.functions.lit 创建一个Column字面量值。
+        df_out.repartition(10).write.format('hive').saveAsTable(f'nlp_dev.{config_name}_sample_hash',  mode="append", partitionBy=['the_month']) # pyspark.sql.DataFrame.repartition 参数numPartitions : int可以是一个 int 来指定分区的目标数量或一个 Column。
+        start_month = str(int(start_month)+1) if int(start_month[4:])<12 else str(int(start_month)+100-11) # 更新start_month, 202112+100-11=202201
         cluster.logger.warning(f"the_month={the_month}")
     cluster.stop()
 
 
-
+# 使用simhash算法
 def merge_main(config_name):
     app_name = config_name+"-Sample_merge"
     wordtxt = 'data/new_word_freq.txt'
@@ -89,6 +89,7 @@ def merge_main(config_name):
     df.write.saveAsTable(f'nlp_dev.{config_name}_sample_merge', mode='overwrite',partitionBy=['the_month'])
     spark.stop()
 
+# 使用minhash算法
 def merge_main_v2(config_name):
     app_name = config_name+"-Sample"
     cluster = MinHashCluster(app_name,mysql_config,log_level='WARN', **kwargs)
@@ -105,9 +106,24 @@ def merge_main_v2(config_name):
     cluster.stop()
 
 
-def _hashing(dataframe, hash_udf,bands_index):
+def _hashing(dataframe, hash_udf, bands_index):
+    """
+    insert overwrite table1
+    select *, hash_udf(msg) as meta_hash from table;
+
+    insert overwrite table2
+    select *, meta_hash, cnt from
+    (
+    select *
+    , meta_hash
+    , count() over(partition by meta_hash order by msg desc) as cnt
+    , rank() over(partition by meta_hash order by len(msg) desc) as rank
+    from table1
+    ) t 
+    where t.rank = 1;
+    """
     from pyspark.sql.window import Window
-    w = Window.partitionBy('meta_hash')
+    w = Window.partitionBy('meta_hash')  # 用于在 DataFrame 中定义窗口的实用程序函数，支持方法：orderBy, partitionBy, rangeBetween, rowsBetween
     df = dataframe.select(
                             *dataframe.columns,
                             hash_udf(F.col('msg')).alias('meta_hash')
@@ -118,7 +134,12 @@ def _hashing(dataframe, hash_udf,bands_index):
                             F.count('meta_hash').over(w).alias('cnt'),
                             F.rank().over(w.orderBy(F.length('msg').desc(), 'row_key')).alias('rank')
                          ).filter(F.col('rank') == 1).drop('rank').cache()
-    hash_cols = list(map(lambda x: F.col('meta_hash')[x].alias('hash_index_' + str(x)),bands_index))
+    hash_cols = list(map(lambda x: F.col('meta_hash')[x].alias('hash_index_' + str(x)),bands_index))  
+    # meta_hash一列差分成多列
+    # bands_index是一个列表[0,1,2,3]，这个参数在minhash算法中被使用
+    # pyspark.sql.functions.col 根据给定的列名返回一个Column
+    # lambda x, y: x*y；函数输入是x和y，输出是它们的积x*y  
+    # map(square, [1,2,3,4,5])   # 计算列表各个元素的平方
     cols = df.columns + hash_cols
     return df.select(cols).drop('meta_hash')
 

@@ -1,0 +1,792 @@
+{
+    "金融_银行_储蓄账户_收入": {
+        "ner_list": [
+            "交易对象卡号(尾号)",
+            "交易金额币种",
+            "交易金额",
+            "交易对象",
+            "余额",
+            "卡号(尾号)",
+            "余额币种",
+            "姓名"
+        ],
+        "ner2nlp_col": {
+            "交易对象卡号(尾号)": "other_card_number",
+            "交易金额币种": "transaction_amount_unit",
+            "交易金额": "transaction_amount",
+            "交易对象": "other_name",
+            "余额": "balance",
+            "卡号(尾号)": "self_card_number",
+            "余额币种": "balance_unit",
+            "姓名": "self_name"
+        },
+        "nlp2dwb": {
+            "other_card_number": [
+                "other_card_number",
+                "clean_card_number_udf"
+            ],
+            "transaction_amount_unit": [
+                "transaction_amount_unit",
+                "amount_unit_udf"
+            ],
+            "transaction_amount": [
+                "transaction_amount",
+                "amount_udf"
+            ],
+            "other_name": [
+                "other_name",
+                "base_udf"
+            ],
+            "balance": [
+                "balance",
+                "amount_udf"
+            ],
+            "self_card_number": [
+                "self_card_number",
+                "clean_card_number_udf"
+            ],
+            "balance_unit": [
+                "balance_unit",
+                "amount_unit_udf"
+            ],
+            "self_name": [
+                "self_name",
+                "name_udf"
+            ],
+            "type": [
+                "msg",
+                "income_transaction_type_udf"
+            ]
+        }
+    },
+    "金融_银行_储蓄账户_支出": {
+        "ner_list": [
+            "交易对象卡号(尾号)",
+            "交易金额币种",
+            "交易金额",
+            "交易对象",
+            "余额",
+            "卡号(尾号)",
+            "余额币种",
+            "姓名"
+        ],
+        "ner2nlp_col": {
+            "交易对象卡号(尾号)": "other_card_number",
+            "交易金额币种": "transaction_amount_unit",
+            "交易金额": "transaction_amount",
+            "交易对象": "other_name",
+            "余额": "balance",
+            "卡号(尾号)": "self_card_number",
+            "余额币种": "balance_unit",
+            "姓名": "self_name"
+        },
+        "nlp2dwb": {
+            "other_card_number": [
+                "other_card_number",
+                "clean_card_number_udf"
+            ],
+            "transaction_amount_unit": [
+                "transaction_amount_unit",
+                "amount_unit_udf"
+            ],
+            "transaction_amount": [
+                "transaction_amount",
+                "amount_udf"
+            ],
+            "other_name": [
+                "other_name",
+                "base_udf"
+            ],
+            "balance": [
+                "balance",
+                "amount_udf"
+            ],
+            "self_card_number": [
+                "self_card_number",
+                "clean_card_number_udf"
+            ],
+            "balance_unit": [
+                "balance_unit",
+                "amount_unit_udf"
+            ],
+            "self_name": [
+                "self_name",
+                "name_udf"
+            ],
+            "type": [
+                "msg",
+                "outcome_transaction_type_udf"
+            ]
+        }
+    },
+    "金融_银行_信用卡_还款": {
+        "ner_list": [
+            "币种",
+            "还款日",
+            "待还金额",
+            "可用(剩余)额度",
+            "已款金额",
+            "最低还款额",
+            "姓名",
+            "卡号(尾号)",
+            "账单日"
+        ],
+        "ner2nlp_col": {
+            "币种": "balance_unit",
+            "还款日": "payoff_date",
+            "待还金额": "outstanding_amount",
+            "可用(剩余)额度": "surplus_amount",
+            "已款金额": "repayment_amount",
+            "最低还款额": "mini_repayment_amount",
+            "姓名": "name",
+            "卡号(尾号)": "card_number",
+            "账单日": "statement_date"
+        },
+        "nlp2dwb": {
+            "balance_unit": [
+                "balance_unit",
+                "amount_unit_udf"
+            ],
+            "payoff_date": [
+                "payoff_date",
+                "date_clean_udf"
+            ],
+            "outstanding_amount": [
+                "outstanding_amount",
+                "amount_udf"
+            ],
+            "surplus_amount": [
+                "surplus_amount",
+                "amount_udf"
+            ],
+            "repayment_amount": [
+                "repayment_amount",
+                "amount_udf"
+            ],
+            "mini_repayment_amount": [
+                "mini_repayment_amount",
+                "amount_udf"
+            ],
+            "name": [
+                "name",
+                "name_udf"
+            ],
+            "card_number": [
+                "card_number",
+                "clean_card_number_udf"
+            ],
+            "statement_date": [
+                "statement_date",
+                "date_clean_udf"
+            ],
+            "prepayment": [
+                "msg",
+                "prepayment_udf"
+            ]
+        }
+    },
+    "金融_银行_信用卡_还款提醒": {
+        "ner_list": [
+            "币种",
+            "还款日",
+            "待还金额",
+            "可用(剩余)额度",
+            "已款金额",
+            "最低还款额",
+            "姓名",
+            "卡号(尾号)",
+            "账单日"
+        ],
+        "ner2nlp_col": {
+            "币种": "balance_unit",
+            "还款日": "payoff_date",
+            "待还金额": "outstanding_amount",
+            "可用(剩余)额度": "surplus_amount",
+            "已款金额": "repayment_amount",
+            "最低还款额": "mini_repayment_amount",
+            "姓名": "name",
+            "卡号(尾号)": "card_number",
+            "账单日": "statement_date"
+        },
+        "nlp2dwb": {
+            "balance_unit": [
+                "balance_unit",
+                "amount_unit_udf"
+            ],
+            "payoff_date": [
+                "payoff_date",
+                "date_clean_udf"
+            ],
+            "outstanding_amount": [
+                "outstanding_amount",
+                "amount_udf"
+            ],
+            "surplus_amount": [
+                "surplus_amount",
+                "amount_udf"
+            ],
+            "repayment_amount": [
+                "repayment_amount",
+                "amount_udf"
+            ],
+            "mini_repayment_amount": [
+                "mini_repayment_amount",
+                "amount_udf"
+            ],
+            "name": [
+                "name",
+                "name_udf"
+            ],
+            "card_number": [
+                "card_number",
+                "clean_card_number_udf"
+            ],
+            "statement_date": [
+                "statement_date",
+                "date_clean_udf"
+            ],
+            "prepayment": [
+                "msg",
+                "prepayment_udf"
+            ]
+        }
+    },
+    "金融_银行_信用卡_支出": {
+        "ner_list": [
+            "交易金额币种",
+            "姓名",
+            "交易金额",
+            "卡号(尾号)",
+            "可用(剩余)额度",
+            "交易对象"
+        ],
+        "ner2nlp_col": {
+            "交易金额币种": "transaction_amount_unit",
+            "姓名": "self_name",
+            "交易金额": "transaction_amount",
+            "卡号(尾号)": "self_card_number",
+            "可用(剩余)额度": "credit_limit",
+            "交易对象": "other_name"
+        },
+        "nlp2dwb": {
+            "transaction_amount_unit": [
+                "transaction_amount_unit",
+                "amount_unit_udf"
+            ],
+            "self_name": [
+                "self_name",
+                "name_udf"
+            ],
+            "transaction_amount": [
+                "transaction_amount",
+                "amount_udf"
+            ],
+            "self_card_number": [
+                "self_card_number",
+                "clean_card_number_udf"
+            ],
+            "credit_limit": [
+                "credit_limit",
+                "amount_udf"
+            ],
+            "other_name": [
+                "other_name",
+                "base_udf"
+            ]
+        }
+    },
+    "金融_银行_贷款_还款": {
+        "ner_list": [
+            "到期时间",
+            "币种",
+            "还款时间",
+            "待还金额",
+            "可用余额",
+            "已还金额",
+            "本期待还金额",
+            "姓名",
+            "本金",
+            "利息",
+            "卡号(尾号)"
+        ],
+        "ner2nlp_col": {
+            "到期时间": "due_date",
+            "币种": "balance_unit",
+            "还款时间": "payoff_date",
+            "待还金额": "outstanding_amount",
+            "可用余额": "surplus_amount",
+            "已还金额": "repayment_amount",
+            "本期待还金额": "now_outstanding_amount",
+            "姓名": "name",
+            "本金": "principal",
+            "利息": "interest",
+            "卡号(尾号)": "card_number"
+        },
+        "nlp2dwb": {
+            "due_date": [
+                "due_date",
+                "date_clean_udf"
+            ],
+            "balance_unit": [
+                "balance_unit",
+                "amount_unit_udf"
+            ],
+            "payoff_date": [
+                "payoff_date",
+                "date_clean_udf"
+            ],
+            "outstanding_amount": [
+                "outstanding_amount",
+                "amount_udf"
+            ],
+            "surplus_amount": [
+                "surplus_amount",
+                "amount_udf"
+            ],
+            "repayment_amount": [
+                "repayment_amount",
+                "amount_udf"
+            ],
+            "now_outstanding_amount": [
+                "now_outstanding_amount",
+                "amount_udf"
+            ],
+            "name": [
+                "name",
+                "name_udf"
+            ],
+            "principal": [
+                "principal",
+                "amount_udf"
+            ],
+            "interest": [
+                "interest",
+                "amount_udf"
+            ],
+            "card_number": [
+                "card_number",
+                "clean_card_number_udf"
+            ],
+            "type": [
+                "msg",
+                "loan_type_udf"
+            ],
+            "prepayment": [
+                "msg",
+                "prepayment_udf"
+            ]
+        }
+    },
+    "金融_银行_贷款_还款提醒": {
+        "ner_list": [
+            "到期时间",
+            "币种",
+            "还款时间",
+            "待还金额",
+            "可用余额",
+            "已还金额",
+            "本期待还金额",
+            "姓名",
+            "本金",
+            "利息",
+            "卡号(尾号)"
+        ],
+        "ner2nlp_col": {
+            "到期时间": "due_date",
+            "币种": "balance_unit",
+            "还款时间": "payoff_date",
+            "待还金额": "outstanding_amount",
+            "可用余额": "surplus_amount",
+            "已还金额": "repayment_amount",
+            "本期待还金额": "now_outstanding_amount",
+            "姓名": "name",
+            "本金": "principal",
+            "利息": "interest",
+            "卡号(尾号)": "card_number"
+        },
+        "nlp2dwb": {
+            "due_date": [
+                "due_date",
+                "date_clean_udf"
+            ],
+            "balance_unit": [
+                "balance_unit",
+                "amount_unit_udf"
+            ],
+            "payoff_date": [
+                "payoff_date",
+                "date_clean_udf"
+            ],
+            "outstanding_amount": [
+                "outstanding_amount",
+                "amount_udf"
+            ],
+            "surplus_amount": [
+                "surplus_amount",
+                "amount_udf"
+            ],
+            "repayment_amount": [
+                "repayment_amount",
+                "amount_udf"
+            ],
+            "now_outstanding_amount": [
+                "now_outstanding_amount",
+                "amount_udf"
+            ],
+            "name": [
+                "name",
+                "name_udf"
+            ],
+            "principal": [
+                "principal",
+                "amount_udf"
+            ],
+            "interest": [
+                "interest",
+                "amount_udf"
+            ],
+            "card_number": [
+                "card_number",
+                "clean_card_number_udf"
+            ],
+            "type": [
+                "msg",
+                "loan_type_udf"
+            ],
+            "prepayment": [
+                "msg",
+                "prepayment_udf"
+            ]
+        }
+    },
+    "金融_银行_信用卡_逾期": {
+        "ner_list": [
+            "逾期天数",
+            "待还金额",
+            "最低还款额",
+            "姓名",
+            "币种",
+            "卡号(尾号)"
+        ],
+        "ner2nlp_col": {
+            "逾期天数": "overdue_day",
+            "待还金额": "outstanding_amount",
+            "最低还款额": "mini_repayment_amount",
+            "姓名": "name",
+            "币种": "balance_unit",
+            "卡号(尾号)": "card_number"
+        },
+        "nlp2dwb": {
+            "overdue_day": [
+                "overdue_day",
+                "due_days"
+            ],
+            "outstanding_amount": [
+                "outstanding_amount",
+                "amount_udf"
+            ],
+            "mini_repayment_amount": [
+                "mini_repayment_amount",
+                "amount_udf"
+            ],
+            "name": [
+                "name",
+                "name_udf"
+            ],
+            "balance_unit": [
+                "balance_unit",
+                "amount_unit_udf"
+            ],
+            "card_number": [
+                "card_number",
+                "clean_card_number_udf"
+            ]
+        }
+    },
+    "金融_银行_信用卡_额度调整": {
+        "ner_list": [
+            "调整后额度",
+            "姓名",
+            "币种",
+            "卡号(尾号)"
+        ],
+        "ner2nlp_col": {
+            "调整后额度": "credit_limit",
+            "姓名": "name",
+            "币种": "balance_unit",
+            "卡号(尾号)": "card_number"
+        },
+        "nlp2dwb": {
+            "credit_limit": [
+                "credit_limit",
+                "amount_udf"
+            ],
+            "name": [
+                "name",
+                "name_udf"
+            ],
+            "balance_unit": [
+                "balance_unit",
+                "amount_unit_udf"
+            ],
+            "card_number": [
+                "card_number",
+                "clean_card_number_udf"
+            ]
+        }
+    },
+    "金融_银行_贷款_审核": {
+        "ner_list": [
+            "平台名称",
+            "期限",
+            "首次还款日",
+            "到期日",
+            "每期还款日",
+            "首期还款额",
+            "月还款额",
+            "每期本金",
+            "每期手续费/利",
+            "姓名",
+            "卡号(尾号)",
+            "借款金额"
+        ],
+        "ner2nlp_col": {
+            "平台名称": "platform",
+            "期限": "deadline",
+            "首次还款日": "first_repayment_date",
+            "到期日": "maturity",
+            "每期还款日": "each_repayment_date",
+            "首期还款额": "each_repayment_amount",
+            "月还款额": "monthly_repayment_amount",
+            "每期本金": "each_principal",
+            "每期手续费/利": "each_interest",
+            "姓名": "name",
+            "卡号(尾号)": "card_number",
+            "借款金额": "repayment_amount"
+        },
+        "nlp2dwb": {
+            "platform": [
+                "platform",
+                "base_udf"
+            ],
+            "deadline": [
+                "deadline",
+                "base_udf"
+            ],
+            "first_repayment_date": [
+                "first_repayment_date",
+                "date_clean_udf"
+            ],
+            "maturity": [
+                "maturity",
+                "date_clean_udf"
+            ],
+            "each_repayment_date": [
+                "each_repayment_date",
+                "date_clean_udf"
+            ],
+            "each_repayment_amount": [
+                "each_repayment_amount",
+                "amount_udf"
+            ],
+            "monthly_repayment_amount": [
+                "monthly_repayment_amount",
+                "amount_udf"
+            ],
+            "each_principal": [
+                "each_principal",
+                "amount_udf"
+            ],
+            "each_interest": [
+                "each_interest",
+                "amount_udf"
+            ],
+            "name": [
+                "name",
+                "name_udf"
+            ],
+            "card_number": [
+                "card_number",
+                "clean_card_number_udf"
+            ],
+            "repayment_amount": [
+                "repayment_amount",
+                "amount_udf"
+            ],
+            "type": [
+                "msg",
+                "loan_type_udf"
+            ],
+            "status": [
+                "msg",
+                "status_udf"
+            ]
+        }
+    },
+    "金融_银行_贷款_发放": {
+        "ner_list": [
+            "平台名称",
+            "期限",
+            "首次还款日",
+            "到期日",
+            "每期还款日",
+            "首期还款额",
+            "月还款额",
+            "每期本金",
+            "每期手续费/利",
+            "姓名",
+            "卡号(尾号)",
+            "借款金额"
+        ],
+        "ner2nlp_col": {
+            "平台名称": "platform",
+            "期限": "deadline",
+            "首次还款日": "first_repayment_date",
+            "到期日": "maturity",
+            "每期还款日": "each_repayment_date",
+            "首期还款额": "each_repayment_amount",
+            "月还款额": "monthly_repayment_amount",
+            "每期本金": "each_principal",
+            "每期手续费/利": "each_interest",
+            "姓名": "name",
+            "卡号(尾号)": "card_number",
+            "借款金额": "repayment_amount"
+        },
+        "nlp2dwb": {
+            "platform": [
+                "platform",
+                "base_udf"
+            ],
+            "deadline": [
+                "deadline",
+                "base_udf"
+            ],
+            "first_repayment_date": [
+                "first_repayment_date",
+                "date_clean_udf"
+            ],
+            "maturity": [
+                "maturity",
+                "date_clean_udf"
+            ],
+            "each_repayment_date": [
+                "each_repayment_date",
+                "date_clean_udf"
+            ],
+            "each_repayment_amount": [
+                "each_repayment_amount",
+                "amount_udf"
+            ],
+            "monthly_repayment_amount": [
+                "monthly_repayment_amount",
+                "amount_udf"
+            ],
+            "each_principal": [
+                "each_principal",
+                "amount_udf"
+            ],
+            "each_interest": [
+                "each_interest",
+                "amount_udf"
+            ],
+            "name": [
+                "name",
+                "name_udf"
+            ],
+            "card_number": [
+                "card_number",
+                "clean_card_number_udf"
+            ],
+            "repayment_amount": [
+                "repayment_amount",
+                "amount_udf"
+            ],
+            "type": [
+                "msg",
+                "loan_type_udf"
+            ],
+            "status": [
+                "msg",
+                "status_udf"
+            ]
+        }
+    },
+    "金融_银行_贷款_逾期": {
+        "ner_list": [
+            "逾期金额",
+            "逾期日期",
+            "逾期天/期数",
+            "逾期本金",
+            "逾期利息",
+            "姓名",
+            "卡号(尾号)"
+        ],
+        "ner2nlp_col": {
+            "逾期金额": "overdue_amount",
+            "逾期日期": "overdu_date",
+            "逾期天/期数": "overdue_day",
+            "逾期本金": "overdue_principal",
+            "逾期利息": "overdue_interest",
+            "姓名": "name",
+            "卡号(尾号)": "card_number"
+        },
+        "nlp2dwb": {
+            "overdue_amount": [
+                "overdue_amount",
+                "amount_udf"
+            ],
+            "overdu_date": [
+                "overdu_date",
+                "date_clean_udf"
+            ],
+            "overdue_day": [
+                "overdue_day",
+                "due_days"
+            ],
+            "overdue_principal": [
+                "overdue_principal",
+                "amount_udf"
+            ],
+            "overdue_interest": [
+                "overdue_interest",
+                "amount_udf"
+            ],
+            "name": [
+                "name",
+                "name_udf"
+            ],
+            "card_number": [
+                "card_number",
+                "clean_card_number_udf"
+            ],
+            "type": [
+                "msg",
+                "loan_type_udf"
+            ]
+        }
+    },
+    "金融_银行_信用卡_申请审批":{
+        "ner_list": [
+        ],
+        "ner2nlp_col": {
+        },
+        "nlp2dwb": {
+            "status": [
+                "msg",
+                "status_udf"
+            ]
+        }
+    },
+    "金融_银行_信用卡_放卡激活":{
+        "ner_list": [
+        ],
+        "ner2nlp_col": {
+        },
+        "nlp2dwb": {
+            "status": [
+                "msg",
+                "status_udf"
+            ]
+        }
+    }
+}
