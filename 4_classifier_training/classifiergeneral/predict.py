@@ -1,4 +1,5 @@
 # coding:utf-8
+from encodings import utf_8
 import os
 import torch
 import json
@@ -81,12 +82,13 @@ class ClassifierPredict(object):
 
 if __name__ == '__main__':
     texts = []
-    fr = open('贷款审核错误.txt')
+    fr = open('car_20220413.txt')
     for line in fr:
         texts.append(line.strip())
 
     predictor = ClassifierPredict()
     result = predictor.predict(texts)
-    for i in range(len(result)):
-        print(str(result[i]) + ' ' + texts[i] )
+    with open('predict_result.txt', 'w', encoding='utf-8') as f:
+        for i in range(len(result)):
+            f.write(str(result[i]).split('\t')[0] + '\\x01' + texts[i] + '\n')
     # print('\n'.join(list(zip(result, texts))))

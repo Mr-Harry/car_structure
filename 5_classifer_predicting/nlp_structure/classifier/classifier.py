@@ -52,7 +52,9 @@ if __name__ == "__main__":
 
     config_file_path = os.path.join(
         ABSPATH_F, 'config', args.config_name, 'config_'+args.config_type+'.json')
-
+    # /tmp/car_class_1649986355.46925.json这个文件会被上传的minio，作为模型运行的参数
+    if not os.path.exists(os.path.join(ABSPATH_F, 'tmp')):
+        os.makedirs(os.path.join(ABSPATH_F, 'tmp'))
     config_file = os.path.join(
         ABSPATH_F, 'tmp', args.config_name + '_class_%.5f' % (time.time()) + '.json')
     dict_list_file_path = os.path.join(

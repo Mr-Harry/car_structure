@@ -415,10 +415,94 @@ CUDA_VISIBLE_DEVICES=0 python3 train.py --train_dataset_path /home/nlp/qianyu/la
 
 3. 结果核验（重新找一批汽车短文本，使用模型预测，对预测结果进行人工核验)
 ```bash
-CUDA_VISIBLE_DEVICES=0,1 OMP_NUM_THREADS=1 python -m torch.distributed.launch --nproc_per_node=2 multiple_predict.py --model_fold ./checkpoint/DPCNN --read_path * --write_path * --msg_index * --half
+cp /home/nlp/qianyu/label_data/predict_input/car_20220413.txt /home/nlp/qianyu/classifiergeneral
+su nlp
+python predict.py
 ```
 
-### 关键节点五：分类模型预测
+### 关键节点五：分类补数
+分类数据往往存在分类不均衡的问题，导致分类结果不达标，因此需要对数据量较少的类别进行补数
+
+1. 模板抽数，调大抽样率，多多益善
+```bash
+# 建表：nlp_dev.car_sample_hash, nlp_dev.car_sample_merge
+nohup sh sample_hash/start.sh car_structure car 202101 202112 0.3>template_sampling.log 2>&1 &
+# 可以动态查看日志
+tail -10f template_sampling.log
+```
+2. 去重，只要msg字段
+
+建表
+```sql
+drop table if exists nlp_dev.car_qianyu_20220413;
+create table if not exists nlp_dev.car_qianyu_20220413
+(
+    msg String COMMENT '文本内容'
+)COMMENT '从sample表抽取的过去1年的汽车短文本'
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '\\t'
+STORED AS orc;
+```
+
+写数
+```bash
+#!/bin/bash
+source /etc/profile
+source ~/.bash_profile
+  
+rss_path=$1
+  
+sql_part="
+insert overwrite table nlp_dev.car_qianyu_20220413
+select msg from
+(select *, row_number() over (partition by msg order by msg asc) num from nlp_dev.car_sample_merge) t
+where t.num = 1;
+;
+"
+  
+cd /home/${rss_path}/ && bash rss.sh "temp_task" "nlp_dev" "$sql_part"
+  
+if [[ $? != 0 ]];then
+echo "sql 运行失败！！！！！！"
+exit 1
+fi
+echo 数据写入完成
+```
+
+把hive表的数据按照txt格式导出（看结果可以知道导出了4,250,214条数据）
+```bash
+beeline -u "jdbc:hive2://coprocessor01-fcy.hadoop.dztech.com:2181,coprocessor02-fcy.hadoop.dztech.com:2181,coprocessor03-fcy.hadoop.dztech.com:2181/;serviceDiscoveryMode=zooKeeper;zooKeeperNamespace=hiveserver2" --showHeader=false --outputformat=tsv -e "select msg from nlp_dev.car_qianyu_20220413">car_20220415.txt
+```
+
+传送到模型训练的文件夹
+```
+scp car_20220415.txt nlp@10.30.12.16:/home/nlp/qianyu/classifiergeneral
+```
+
+模型预测
+```
+su nlp
+python predict.py
+```
+
+选取我需要的分类文本
+```
+python choose_target_labeled_data.py
+```
+
+上传到认知平台让算法助理去打标
+```
+curl -H 'Content-Type: multipart/form-data' -F "file=@有车行为_年检年审.txt" "http://10.30.103.146:8080/nlp/file/upload/983"
+curl -H 'Content-Type: multipart/form-data' -F "file=@有车行为_洗车.txt" "http://10.30.103.146:8080/nlp/file/upload/983"
+curl -H 'Content-Type: multipart/form-data' -F "file=@有车行为_记分办证.txt" "http://10.30.103.146:8080/nlp/file/upload/983"
+curl -H 'Content-Type: multipart/form-data' -F "file=@购车意向_买车.txt" "http://10.30.103.146:8080/nlp/file/upload/983"
+curl -H 'Content-Type: multipart/form-data' -F "file=@购车意向_学车考试.txt" "http://10.30.103.146:8080/nlp/file/upload/983"
+curl -H 'Content-Type: multipart/form-data' -F "file=@购车意向_摇号竞价.txt" "http://10.30.103.146:8080/nlp/file/upload/983"
+curl -H 'Content-Type: multipart/form-data' -F "file=@购车意向_看车询价.txt" "http://10.30.103.146:8080/nlp/file/upload/983"
+```
+
+
+
+### 关键节点六：分类模型预测
 1. 进入GPU服务器（训练模型的服务器），找到模型训练的文件夹classifiergeneral
 2. 将/home/nlp/qianyu/classifiergeneral/checkpoint/DPCNN内的所有文件移动到config文件夹内 `mv /home/nlp/qianyu/classifiergeneral/checkpoint/DPCNN/* /home/nlp/qianyu/classifiergeneral/config `
 3. 打包模型文件夹classifiergeneral `tar cvf /home/nlp/qianyu/carV2ClassModel20220414.tgz /home/nlp/qianyu/classifiergeneral/`
@@ -426,6 +510,7 @@ CUDA_VISIBLE_DEVICES=0,1 OMP_NUM_THREADS=1 python -m torch.distributed.launch --
 5. 模型保存在minio里面，minio在docker里面，进入docker `docker exec -it 2bc8e2c2fb90 /bin/bash`
 6. 进入docker以后连接MC服务 `mc config host add minio http://10.30.103.10:9000 minioadmin minioadmin --api s3v4`
 7. 向MC上传模型 `cat carV2ClassModel20220414.tgz | mc pipe minio/model/carV2ClassModel20220414.tgz`
+8. 退出容器 `exit`
 
 两个配置脚本 `/car_structure/5_classifer_predicting/nlp_structure_config/car`
 config_test.json 主要配置文件，包含依赖表名，各级输出表名配置等。 线上运行时需增加config_master.json和config_customer.json
@@ -658,3 +743,37 @@ STORED AS orc;
 ```
  
 `python3 classifier/classifier.py --config_name car --the_date 2021-10-01 --file_no all --config_type test`  
+
+
+minio/code/predict4
+
+跑hive表的服务器，读HDFS，写HDFS
+GPU服务器，接到命令后，从minio下载模型和数据（HDFS），推理，结果写道HDFS
+minio 可以理解成内网服务器间的文件传输工具
+
+
+minio内部的数据怎么访问？
+
+```bash
+# 查看桶内的文件
+mc ls minio/code/
+
+# 拉取代码
+mc cat minio/code/rust_server4.tgz >> rust_server.tgz
+mc cat minio/code/predict4.tgz >> predict.tgz
+
+# 解压
+tar xvf predict.tgz && rm predict.tgz
+```
+
+如何容器内外如何进行文件传输？
+```bash
+# 将容器2bc8e2c2fb90中路径/root/qianyu/下的文件夹predict/ 拷贝到宿主机 /home/nlp/qianyu
+docker cp 2bc8e2c2fb90:/root/qianyu/predict /home/nlp/qianyu
+
+# 将宿主机中的路径/home/nlp/qianyu下的文件夹predict,拷贝到容器2bc8e2c2fb90的/root/qianyu/路径下
+docker cp /home/nlp/qianyu/predict 2bc8e2c2fb90:/root/qianyu/
+```
+
+python怎么直接向HDFS写数？
+- 看predict代码

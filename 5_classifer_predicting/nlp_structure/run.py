@@ -1,7 +1,7 @@
 import sys
 import time
 import requests
-from minio import Minio, ResponseError
+from minio import Minio, S3Error
 import signal
 
 minio_host = '10.30.103.10:9000'
@@ -26,7 +26,7 @@ class Client:
         try:
             self.minio_client.fput_object(self.bucket, minio_path, local_absolute_path)
             print('config upload finish')
-        except ResponseError as err:
+        except S3Error as err:
             print(err)
 
     @staticmethod

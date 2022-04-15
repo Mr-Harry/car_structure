@@ -1,0 +1,15 @@
+ner_model/data_path/*
+*.ann
+*.anns
+*.txt
+*.sqlite3
+*.pyc
+*.ipynb
+*.params
+*.json
+*.csv
+*.sql
+*.hdf5
+*.h5
+*.xlsx
+save_model/*
